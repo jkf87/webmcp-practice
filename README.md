@@ -2,7 +2,7 @@
 
 WebMCP 영상의 **할 일 앱**과 **쇼핑몰**을 직접 조작하며 도구 등록, 상태 변경, 사용자 확인 흐름을 살펴보는 예제입니다.
 
-**[브라우저에서 바로 실습](https://jkf87.github.io/webmcp-practice/)** · **[단계별 실습 안내](PRACTICE.md)** · **[ZIP 다운로드](https://github.com/jkf87/webmcp-practice/archive/refs/heads/main.zip)**
+**[브라우저에서 바로 실습](https://conanssam.com/webmcp-practice/)** · **[단계별 실습 안내](PRACTICE.md)** · **[ZIP 다운로드](https://github.com/jkf87/webmcp-practice/archive/refs/heads/main.zip)**
 
 ![투두 앱의 실제 실행 화면](assets/todo-preview.jpg)
 
