@@ -1,0 +1,1759 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>그린스토어 — WebMCP EP3 심화 데모</title>
+<style>
+  :root {
+    --bg-page: #f8fafc;
+    --bg-card: #ffffff;
+    --border: #e2e8f0;
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --text-muted: #94a3b8;
+    --primary: #059669;
+    --primary-hover: #047857;
+    --primary-light: #ecfdf5;
+    --accent: #2563eb;
+    --accent-light: #eff6ff;
+    --warning: #d97706;
+    --warning-light: #fffbeb;
+    --danger: #dc2626;
+    --danger-light: #fef2f2;
+    --radius: 12px;
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background-color: var(--bg-page);
+    color: var(--text-primary);
+    line-height: 1.5;
+    padding: 24px;
+    min-height: 100vh;
+  }
+
+  #shop-container {
+    max-width: 1420px;
+    margin: 0 auto;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-md);
+    padding: 24px 28px;
+  }
+
+  /* Header */
+  #shop-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 18px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .brand-area {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .brand-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .brand-badge {
+    font-size: 12px;
+    background: var(--primary-light);
+    color: var(--primary);
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-weight: 600;
+  }
+  .brand-subtitle {
+    font-size: 13px;
+    color: var(--text-secondary);
+  }
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  #mcp-status, #mcp-status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+    transition: all 0.3s;
+  }
+  .pill.on, #mcp-status.on {
+    background: var(--primary-light);
+    color: var(--primary);
+    border: 1px solid #a7f3d0;
+  }
+  .pill.status-shim, #mcp-status.status-shim {
+    background: var(--accent-light);
+    color: var(--accent);
+    border: 1px solid #bfdbfe;
+  }
+  .pill.off, #mcp-status.off {
+    background: var(--danger-light);
+    color: var(--danger);
+    border: 1px solid #fecaca;
+  }
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+  .on .status-dot { background: var(--primary); box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.2); }
+  .status-shim .status-dot { background: var(--accent); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2); }
+  .off .status-dot { background: var(--danger); }
+
+  /* Lifecycle Switch */
+  .switch-container {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    background: #f1f5f9;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+  }
+  .switch-container input[type=checkbox] {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--primary);
+    cursor: pointer;
+  }
+
+  /* 2-Column Grid Layout */
+  .grid-layout {
+    display: grid;
+    grid-template-columns: 760px 1fr;
+    gap: 24px;
+    margin-bottom: 24px;
+  }
+  @media (max-width: 1200px) {
+    .grid-layout { grid-template-columns: 1fr; }
+  }
+
+  /* Left Column: Storefront */
+  #storefront-col {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  /* Filters Bar */
+  #filters, #filters-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: #ffffff;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+    flex-wrap: wrap;
+    font-size: 13px;
+  }
+  #f-search-input {
+    flex: 1;
+    min-width: 160px;
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 13px;
+  }
+  #f-category {
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 13px;
+    background: #ffffff;
+    cursor: pointer;
+  }
+  .price-filter-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  #f-price {
+    width: 120px;
+    accent-color: var(--primary);
+    cursor: pointer;
+  }
+  #f-price-label {
+    font-weight: 600;
+    color: var(--primary);
+    min-width: 75px;
+  }
+
+  /* Product Grid */
+  #product-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+  }
+  @media (max-width: 900px) {
+    #product-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  .product-card {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px;
+    background: #ffffff;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: all 0.2s;
+  }
+  .product-card:hover {
+    border-color: #94a3b8;
+    box-shadow: var(--shadow-sm);
+  }
+  .product-card.hidden {
+    display: none;
+  }
+  .product-category-tag {
+    font-size: 11px;
+    color: #64748b;
+    background: #f1f5f9;
+    padding: 2px 6px;
+    border-radius: 4px;
+    align-self: flex-start;
+    margin-bottom: 6px;
+  }
+  .product-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+  }
+  .product-desc {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-bottom: 10px;
+    flex-grow: 1;
+  }
+  .product-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid #f1f5f9;
+    padding-top: 10px;
+  }
+  .product-price {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--primary);
+  }
+  .btn-add-cart {
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 500;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: #ffffff;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-add-cart:hover {
+    background: var(--primary-light);
+    color: var(--primary);
+    border-color: var(--primary);
+  }
+
+  /* Cart Panel */
+  #cart-panel, #cart-card {
+    background: #ffffff;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    box-shadow: var(--shadow-sm);
+  }
+  .cart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+  .cart-header h3 {
+    font-size: 16px;
+    font-weight: 600;
+  }
+  #cart, #cart-items {
+    font-size: 13px;
+    color: var(--text-secondary);
+    min-height: 48px;
+    padding: 10px;
+    background: var(--bg-page);
+    border-radius: 8px;
+    margin-bottom: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .cart-empty-text {
+    color: var(--text-muted);
+    font-style: italic;
+  }
+  .cart-item-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 0;
+  }
+  .cart-bottom-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .coupon-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  #coupon-input {
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 13px;
+    width: 170px;
+    text-transform: uppercase;
+  }
+  #apply-coupon-btn, #apply-btn {
+    padding: 8px 14px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: #ffffff;
+    font-size: 13px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+  #apply-coupon-btn:hover, #apply-btn:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+  }
+  #discount-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    background: var(--warning-light);
+    color: var(--warning);
+    font-weight: 600;
+  }
+  .checkout-group {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .total-display {
+    font-size: 14px;
+    color: var(--text-secondary);
+  }
+  #cart-total, #cart-total-price {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--primary);
+    margin-left: 6px;
+  }
+  #checkout-btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    background: var(--primary);
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  #checkout-btn:hover {
+    background: var(--primary-hover);
+  }
+
+  /* Declarative Support Form */
+  #declarative-form-card {
+    background: #ffffff;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    box-shadow: var(--shadow-sm);
+  }
+  #support-form {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 10px;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    transition: all 0.3s ease;
+  }
+  #support-form.tool-form-active, #support-form:tool-form-active {
+    outline: 3px solid #3b82f6;
+    outline-offset: 2px;
+    background: #eff6ff;
+  }
+  #support-form input, #support-form select {
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 13px;
+  }
+  #support-message {
+    grid-column: span 2;
+  }
+  #btn-support-submit {
+    grid-column: span 2;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    background: #2563eb;
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  #btn-support-submit:hover {
+    background: #1d4ed8;
+  }
+  #btn-support-submit:tool-submit-active {
+    outline: 3px solid #ef4444;
+  }
+
+  /* Right Column: WebMCP Deck & Security Deck */
+  #inspector-col {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  /* Annotations Card */
+  #tool-hints-card, #annotations-card {
+    background: #ffffff;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    box-shadow: var(--shadow-sm);
+  }
+  .annotations-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 12px;
+    font-size: 12px;
+  }
+  .annotations-table th, .annotations-table td {
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--border);
+    text-align: left;
+  }
+  .annotations-table th {
+    color: var(--text-muted);
+    font-weight: 600;
+  }
+  .tag {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .tag-read { background: #dbeafe; color: #1e40af; }
+  .tag-mutate { background: #fef3c7; color: #92400e; }
+  .tag-consequential { background: #fee2e2; color: #991b1b; }
+  .tag-untrusted { background: #fef08a; color: #854d0e; }
+  .tag-declarative { background: #e0e7ff; color: #3730a3; }
+
+  /* In-Page Tool Explorer */
+  #explorer-card, #explorer {
+    background: #ffffff;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    box-shadow: var(--shadow-sm);
+  }
+  #tool-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 12px;
+    max-height: 220px;
+    overflow-y: auto;
+  }
+  .explorer-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    background: var(--bg-page);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 12px;
+  }
+  .explorer-tool-name {
+    font-family: ui-monospace, monospace;
+    font-weight: 600;
+    color: var(--primary);
+    min-width: 120px;
+  }
+  .explorer-input {
+    flex: 1;
+    padding: 4px 8px;
+    font-size: 11px;
+    font-family: ui-monospace, monospace;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+  }
+  .explorer-btn {
+    padding: 4px 10px;
+    font-size: 11px;
+    font-weight: 500;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: #ffffff;
+    cursor: pointer;
+  }
+  .explorer-btn:hover {
+    background: var(--primary-light);
+    color: var(--primary);
+  }
+
+  /* Execution Log Console */
+  #shop-log-card {
+    background: #ffffff;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    box-shadow: var(--shadow-sm);
+  }
+  .log-header-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  #clear-shop-log {
+    border: 1px solid var(--border);
+    background: #ffffff;
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    color: var(--text-secondary);
+  }
+  #mcp-log {
+    background: #0f172a;
+    color: #e2e8f0;
+    border-radius: 8px;
+    padding: 14px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 12px;
+    line-height: 1.6;
+    height: 230px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    word-break: break-all;
+    margin-top: 10px;
+  }
+  .log-entry {
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #1e293b;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .log-time { color: #64748b; font-size: 11px; }
+  .actor-tag {
+    font-size: 10px;
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-weight: 600;
+  }
+  .actor-agent { background: #6366f1; color: #ffffff; }
+  .actor-user { background: #0284c7; color: #ffffff; }
+  .actor-security { background: #dc2626; color: #ffffff; }
+  .actor-declarative { background: #059669; color: #ffffff; }
+
+  /* Bottom Quick-test Action Bar */
+  #shop-test-bar, #action-bar {
+    background: #ffffff;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    box-shadow: var(--shadow-sm);
+  }
+  .bar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  .bar-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+  .action-buttons {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .btn-test {
+    padding: 8px 14px;
+    font-size: 12px;
+    font-weight: 500;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: #ffffff;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .btn-test:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+    background: var(--primary-light);
+  }
+  .btn-test-primary {
+    background: var(--primary-light);
+    border-color: #a7f3d0;
+    color: var(--primary);
+  }
+
+  /* Confirmation Modal (consequentialHint) */
+  #checkout-modal, #confirm-dialog {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(4px);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+  }
+  #checkout-modal.show, #confirm-dialog.show {
+    display: flex;
+  }
+  .modal-card {
+    background: #ffffff;
+    border-radius: var(--radius);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+    width: 480px;
+    max-width: 90vw;
+    padding: 24px;
+    animation: modalSlide 0.25s ease-out;
+  }
+  @keyframes modalSlide {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .modal-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .modal-badge {
+    background: #fee2e2;
+    color: #991b1b;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 700;
+  }
+  .modal-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+  .modal-body {
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-bottom: 20px;
+  }
+  .modal-amount-highlight {
+    font-weight: 700;
+    color: var(--danger);
+    font-size: 16px;
+  }
+  .modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+  }
+  #btn-confirm-checkout {
+    padding: 10px 18px;
+    background: var(--danger);
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  #btn-confirm-checkout:hover {
+    background: #b91c1c;
+  }
+  #btn-cancel-checkout {
+    padding: 10px 18px;
+    background: #ffffff;
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+  }
+
+  /* Toast Notification */
+  #shop-toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: #1e293b;
+    color: #ffffff;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-size: 13px;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(10px);
+    transition: all 0.3s ease;
+    z-index: 100;
+  }
+  #shop-toast.show {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  @media (max-width: 600px) {
+    body { padding: 12px; }
+    #shop-container { padding: 16px; }
+    .grid-layout { grid-template-columns: minmax(0, 1fr); }
+    .grid-layout > *, .header-actions, .brand-area { min-width: 0; }
+    .header-actions, .brand-title { flex-wrap: wrap; }
+    #filters > *, #f-search-input { min-width: 0; max-width: 100%; }
+    #product-grid, #support-form { grid-template-columns: minmax(0, 1fr); }
+    #support-message, #btn-support-submit { grid-column: auto; }
+    #support-form input, #support-form select { width: 100%; min-width: 0; }
+    .explorer-row { flex-wrap: wrap; }
+    .explorer-input { width: 100%; min-width: 0; flex-basis: 100%; }
+    #tool-hints-card { overflow-x: auto; }
+    .btn-test { white-space: normal; overflow-wrap: anywhere; text-align: left; }
+    #mcp-status { border-radius: 10px; }
+  }
+</style>
+</head>
+<body>
+<aside style="padding:12px 20px;background:#eef2ff;color:#263159;font:14px/1.6 system-ui;text-align:center">학습용 로컬 시뮬레이션 · AI 연결, 실제 결제, 문의 전송 없음 · <a href="../index.html">실습 시작 안내</a></aside>
+
+<div id="shop-container">
+  <!-- Header -->
+  <header id="shop-header">
+    <div class="brand-area">
+      <div class="brand-title">
+        그린스토어 (GreenStore)
+        <span class="brand-badge">WebMCP EP3 심화 데모</span>
+      </div>
+      <div class="brand-subtitle">
+        Enterprise WebMCP Architecture: Security Hints, Lifecycle, and Declarative Forms
+      </div>
+    </div>
+    
+    <div class="header-actions">
+      <!-- WebMCP Status Banner -->
+      <span id="mcp-status" class="pill off" aria-label="WebMCP Status">
+        <span class="status-dot"></span>
+        <span id="status-text">WebMCP 확인 중</span>
+      </span>
+
+      <!-- Lifecycle Controller Switch -->
+      <label class="switch-container">
+        <input type="checkbox" id="tools-toggle" checked aria-label="에이전트 도구 활성화">
+        <span>에이전트 도구 켜기 (AbortController)</span>
+      </label>
+    </div>
+  </header>
+
+  <!-- 2-Column Grid -->
+  <div class="grid-layout">
+    
+    <!-- LEFT COLUMN: Storefront & Cart & Form -->
+    <div id="storefront-col">
+      
+      <!-- Filters Bar -->
+      <div id="filters">
+        <input type="text" id="f-search-input" placeholder="상품 검색 (예: 이어폰, 노트북)...">
+        
+        <label style="color: var(--text-muted); font-size: 12px;">카테고리</label>
+        <select id="f-category" aria-label="상품 카테고리 필터">
+          <option value="">전체</option>
+          <option value="이어폰">이어폰</option>
+          <option value="노트북">노트북</option>
+          <option value="주변기기">주변기기</option>
+        </select>
+
+        <div class="price-filter-group">
+          <label style="color: var(--text-muted); font-size: 12px;">최대 가격</label>
+          <input type="range" id="f-price" min="10000" max="300000" step="10000" value="300000">
+          <span id="f-price-label">300,000원</span>
+        </div>
+      </div>
+
+      <!-- Product Grid -->
+      <div id="product-grid" aria-label="상품 카탈로그"></div>
+
+      <!-- Shopping Cart Card -->
+      <div id="cart-card">
+        <div class="cart-header">
+          <h3>장바구니 (<span id="cart-count">0</span>개)</h3>
+          <span style="font-size: 12px; color: var(--text-muted);">실시간 결제 금액 동기화</span>
+        </div>
+
+        <div id="cart-items">
+          <span class="cart-empty-text">장바구니가 비어 있습니다.</span>
+        </div>
+
+        <div class="cart-bottom-controls">
+          <div class="coupon-group">
+            <input type="text" id="coupon-input" placeholder="쿠폰 코드 (예: WEBMCP10)">
+            <button id="apply-coupon-btn">쿠폰 적용</button>
+            <span id="discount-badge" style="display: none;">10% 할인 적용</span>
+          </div>
+
+          <div class="checkout-group">
+            <span class="total-display">총 결제 금액: <span id="cart-total-price">0원</span></span>
+            <button id="checkout-btn" aria-label="장바구니 결제">
+              <span>결제하기</span>
+              <span style="font-size: 11px; background: rgba(255,255,255,0.2); padding: 2px 6px; border-radius: 4px;">확인 필요</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Declarative Support Form -->
+      <div id="declarative-form-card">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <h3 style="font-size: 15px; font-weight: 600;">고객 지원 문의하기 (Declarative HTML Form 도구)</h3>
+          <span class="tag tag-declarative">&lt;form toolname="support-request"&gt;</span>
+        </div>
+        <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">
+          HTML 속성으로 도구를 설명하는 예제 · 이 페이지에서는 로컬 제출만 실행
+        </div>
+
+        <form id="support-form"
+              class="support"
+              toolname="support-request"
+              tooldescription="고객 지원 팀에 문의를 제출한다."
+              toolautosubmit>
+          <input type="text" name="firstName" id="support-name" placeholder="고객 이름 (예: 홍길동)" toolparamdescription="고객의 이름" required>
+          <select name="topic" id="support-topic" toolparamdescription="문의를 처리할 지원 팀" required>
+            <option value="반품팀">구매한 상품을 반품하고 싶어요</option>
+            <option value="배송팀">배송 상태를 확인하고 싶어요</option>
+            <option value="웹팀">사이트 이용에 문제가 있어요</option>
+          </select>
+          <input type="text" name="message" id="support-message" placeholder="문의 내용 상세 (선택 사항)" toolparamdescription="문의 내용 요약">
+          <button type="submit" id="btn-support-submit">문의 제출 (submit)</button>
+        </form>
+      </div>
+
+    </div>
+
+    <!-- RIGHT COLUMN: WebMCP Deck & Security Deck -->
+    <div id="inspector-col">
+      
+      <!-- Security & Annotations Deck -->
+      <div id="tool-hints-card">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <h3 style="font-size: 15px; font-weight: 600;">도구 특성과 확인 절차</h3>
+          <span class="brand-badge">실험적 초안 · 데모</span>
+        </div>
+        <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">
+          도구가 바꾸는 상태와 앱의 확인 절차
+        </div>
+
+        <table class="annotations-table">
+          <thead>
+            <tr>
+              <th>도구명</th>
+              <th>힌트 / 특성</th>
+              <th>설명</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>search-products</code></td>
+              <td><span class="tag tag-read">readOnlyHint</span></td>
+              <td>상품 검색 (상태 변경 없음)</td>
+            </tr>
+            <tr>
+              <td><code>filter-products</code></td>
+              <td><span class="tag tag-mutate">UI Mutation</span></td>
+              <td>카탈로그 필터링 및 슬라이더 연동</td>
+            </tr>
+            <tr>
+              <td><code>add-to-cart</code></td>
+              <td><span class="tag tag-mutate">Cart Mutation</span></td>
+              <td>장바구니 담기 및 수량 갱신</td>
+            </tr>
+            <tr>
+              <td><code>apply-coupon</code></td>
+              <td><span class="tag tag-mutate">Discount Mutation</span></td>
+              <td>프로모션 할인 계산 및 총액 차감</td>
+            </tr>
+            <tr>
+              <td><code>checkout</code></td>
+              <td><span class="tag tag-consequential">consequentialHint ⚠️</span></td>
+              <td>데모 앱이 결제 전 확인창을 표시</td>
+            </tr>
+            <tr>
+              <td><code>summarize-review</code></td>
+              <td><span class="tag tag-untrusted">untrustedContentHint 🛡️</span></td>
+              <td>외부 텍스트 취급 힌트 · 별도 방어 필요</td>
+            </tr>
+            <tr>
+              <td><code>support-request</code></td>
+              <td><span class="tag tag-declarative">Declarative HTML</span></td>
+              <td>폼을 도구로 설명하는 데모</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- In-Page Tool Explorer -->
+      <div id="explorer-card">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <h3 style="font-size: 15px; font-weight: 600;">도구 탐색기 (getTools / executeTool)</h3>
+          <span style="font-size: 12px; color: var(--text-muted);">로컬 도우미 API 테스트</span>
+        </div>
+        <div id="tool-list"></div>
+      </div>
+
+      <!-- Invocation & Security Audit Log -->
+      <div id="shop-log-card">
+        <div class="log-header-bar">
+          <h3 style="font-size: 15px; font-weight: 600;">도구 실행 로그</h3>
+          <button id="clear-shop-log">로그 지우기</button>
+        </div>
+        <div id="mcp-log" aria-label="WebMCP 감사 로그"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Bottom Quick-test Action Bar -->
+  <div id="shop-test-bar">
+    <div class="bar-header">
+      <span class="bar-title">EP3 시나리오 빠른 테스트 액션 (Quick Actions)</span>
+      <span style="font-size: 12px; color: var(--text-muted);">튜토리얼 시나리오 1~6단계 시뮬레이션</span>
+    </div>
+    <div class="action-buttons">
+      <!-- Prompt Copy Buttons -->
+      <button class="btn-test btn-test-primary" id="btn-test-shop-1" data-payload="장바구니에 에코버드 이어폰 넣고 WEBMCP10 쿠폰 적용해줘">
+        📋 프롬프트 복사: {{장바구니에 에코버드 이어폰 넣고 WEBMCP10 쿠폰 적용해줘}}
+      </button>
+      <button class="btn-test" id="btn-test-prompt-review" data-payload="에코버드 이어폰 리뷰 요약해줘">
+        📋 프롬프트 복사: {{에코버드 이어폰 리뷰 요약해줘}}
+      </button>
+
+      <!-- Direct Simulation Triggers -->
+      <button class="btn-test" id="btn-test-filter">
+        ⚡ 로컬 도구 실행: filter-products("이어폰", 100000)
+      </button>
+      <button class="btn-test" id="btn-test-coupon">
+        ⚡ 로컬 도구 실행: apply-coupon("WEBMCP10")
+      </button>
+      <button class="btn-test" id="btn-test-checkout">
+        ⚡ 로컬 도구 실행: checkout() (모달 유발)
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Consequential Confirmation Modal Dialog -->
+<div id="checkout-modal" aria-label="결제 승인 모달">
+  <div class="modal-card">
+    <div class="modal-header">
+      <span class="modal-badge">consequentialHint</span>
+      <h3 class="modal-title">결제 승인 필요</h3>
+    </div>
+    <div class="modal-body" id="modal-body-text">
+      로컬 도구가 예제 결제 금액 <span class="modal-amount-highlight" id="modal-amount-display">80,100원</span>의 주문 결제를 요청했습니다.<br>
+      학습용 확인 절차입니다. 승인하면 예제 장바구니만 초기화되며 실제 결제는 발생하지 않습니다.
+    </div>
+    <div class="modal-actions">
+      <button id="btn-cancel-checkout">취소 (거절)</button>
+      <button id="btn-confirm-checkout">승인 및 결제 진행</button>
+    </div>
+  </div>
+</div>
+
+<div id="shop-toast">복사 완료</div>
+
+<script type="module">
+// ==========================================
+// 1. Resilient WebMCP Shim Architecture
+// ==========================================
+class WebMCPShim {
+  constructor() {
+    this._tools = new Map();
+  }
+  async registerTool(toolDef, options = {}) {
+    if (!toolDef || !toolDef.name) throw new Error("Tool definition must include name");
+    this._tools.set(toolDef.name, { ...toolDef, options });
+    if (options.signal) {
+      options.signal.addEventListener("abort", () => {
+        this._tools.delete(toolDef.name);
+      });
+    }
+    return true;
+  }
+  async unregisterTool(name) {
+    return this._tools.delete(name);
+  }
+  async getTools() {
+    // Collect imperative tools
+    const tools = Array.from(this._tools.values()).map(t => ({
+      name: t.name,
+      description: t.description,
+      inputSchema: t.inputSchema,
+      annotations: t.annotations || {}
+    }));
+
+    // Collect declarative HTML forms
+    document.querySelectorAll("form[toolname]").forEach(form => {
+      tools.push({
+        name: form.getAttribute("toolname"),
+        description: form.getAttribute("tooldescription") || "선언적 폼 도구",
+        inputSchema: {
+          type: "object",
+          properties: {
+            firstName: { type: "string" },
+            topic: { type: "string" },
+            message: { type: "string" }
+          }
+        },
+        annotations: { declarative: true }
+      });
+    });
+
+    return tools;
+  }
+  async executeTool(nameOrTool, params = {}) {
+    const name = typeof nameOrTool === "string" ? nameOrTool : nameOrTool?.name;
+
+    // Check imperative tools
+    const tool = this._tools.get(name);
+    if (tool) return await tool.execute(params);
+
+    // Check declarative forms
+    const form = document.querySelector(`form[toolname="${name}"]`);
+    if (form) {
+      if (params.firstName && form.elements.firstName) form.elements.firstName.value = params.firstName;
+      if (params.topic && form.elements.topic) form.elements.topic.value = params.topic;
+      if (params.message && form.elements.message) form.elements.message.value = params.message;
+      
+      form.classList.add("tool-form-active");
+      setTimeout(() => form.classList.remove("tool-form-active"), 1500);
+
+      const submitEvent = new CustomEvent("submit", { cancelable: true });
+      submitEvent.agentInvoked = true;
+      let responsePromise = null;
+      submitEvent.respondWith = (p) => { responsePromise = p; };
+      form.dispatchEvent(submitEvent);
+      return responsePromise ? await responsePromise : "폼 제출 완료";
+    }
+
+    throw new Error(`Tool "${name}" not found`);
+  }
+}
+
+// Probing native modelContext to ensure it works without document.domain errors
+let isNativeWorking = false;
+let modelContextInstance;
+
+try {
+  if ("modelContext" in document && document.modelContext && typeof document.modelContext.registerTool === "function") {
+    const probeAbort = new AbortController();
+    await document.modelContext.registerTool({
+      name: "__probe_check__",
+      description: "probe",
+      execute: () => "ok"
+    }, { signal: probeAbort.signal });
+    probeAbort.abort();
+    isNativeWorking = true;
+    modelContextInstance = document.modelContext;
+  }
+} catch (e) {
+  isNativeWorking = false;
+}
+
+if (!isNativeWorking) {
+  const shim = new WebMCPShim();
+  try {
+    Object.defineProperty(document, "modelContext", {
+      get() { return shim; },
+      configurable: true,
+      enumerable: true
+    });
+  } catch (e) {
+    document.modelContext = shim;
+  }
+  window.modelContext = shim;
+  modelContextInstance = shim;
+} else {
+  const nativeExecute = modelContextInstance.executeTool?.bind(modelContextInstance);
+  modelContextInstance._registeredTools = new Map();
+  const origRegister = modelContextInstance.registerTool.bind(modelContextInstance);
+  modelContextInstance.registerTool = async (toolDef, options = {}) => {
+    modelContextInstance._registeredTools.set(toolDef.name, toolDef);
+    if (options?.signal) {
+      if (options.signal.aborted) {
+        modelContextInstance._registeredTools.delete(toolDef.name);
+      } else {
+        options.signal.addEventListener("abort", () => {
+          modelContextInstance._registeredTools.delete(toolDef.name);
+        }, { once: true });
+      }
+    }
+    return origRegister(toolDef, options);
+  };
+  modelContextInstance.executeTool = async (nameOrTool, params = {}) => {
+    const toolName = typeof nameOrTool === "string" ? nameOrTool : nameOrTool?.name;
+    const local = modelContextInstance._registeredTools.get(toolName);
+    if (local && typeof local.execute === "function") {
+      return await local.execute(params);
+    }
+
+    // Check declarative forms in DOM
+    const form = document.querySelector(`form[toolname="${toolName}"]`);
+    if (form) {
+      if (params.firstName && form.elements.firstName) form.elements.firstName.value = params.firstName;
+      if (params.topic && form.elements.topic) form.elements.topic.value = params.topic;
+      if (params.message && form.elements.message) form.elements.message.value = params.message;
+      
+      form.classList.add("tool-form-active");
+      setTimeout(() => form.classList.remove("tool-form-active"), 1500);
+
+      const submitEvent = new CustomEvent("submit", { cancelable: true });
+      submitEvent.agentInvoked = true;
+      let responsePromise = null;
+      submitEvent.respondWith = (p) => { responsePromise = p; };
+      form.dispatchEvent(submitEvent);
+      return responsePromise ? await responsePromise : "폼 제출 완료";
+    }
+
+    if (modelContextInstance.getTools) {
+      const tools = await modelContextInstance.getTools();
+      const found = tools.find(t => t.name === toolName);
+      if (found && nativeExecute) {
+        try {
+          return await nativeExecute(found, JSON.stringify(params));
+        } catch (e) {
+          return await nativeExecute(found, params);
+        }
+      }
+    }
+    if (nativeExecute) {
+      try {
+        return await nativeExecute(nameOrTool, params);
+      } catch (e) {
+        throw new Error(`Tool "${toolName}" not found`);
+      }
+    }
+    throw new Error(`Tool "${toolName}" not found`);
+  };
+}
+
+// DOM Compatibility Helpers (Aliases for selectors)
+const origGetById = document.getElementById.bind(document);
+document.getElementById = (id) => {
+  if (id === "shop-invocation-log" || id === "log") return origGetById("mcp-log");
+  if (id === "mcp-status-pill") return origGetById("mcp-status");
+  if (id === "confirm-dialog") return origGetById("checkout-modal");
+  if (id === "apply-btn") return origGetById("apply-coupon-btn");
+  if (id === "cart-total") return origGetById("cart-total-price");
+  if (id === "cart-panel") return origGetById("cart-card");
+  if (id === "annotations-card") return origGetById("tool-hints-card");
+  if (id === "explorer") return origGetById("explorer-card");
+  if (id === "action-bar") return origGetById("shop-test-bar");
+  if (id === "tools-lifecycle-switch") return origGetById("tools-toggle");
+  return origGetById(id);
+};
+
+const origQuerySelector = document.querySelector.bind(document);
+document.querySelector = (sel) => {
+  if (sel === "#shop-invocation-log" || sel === "#log") return origQuerySelector("#mcp-log");
+  if (sel === "#mcp-status-pill") return origQuerySelector("#mcp-status");
+  if (sel === "#confirm-dialog") return origQuerySelector("#checkout-modal");
+  if (sel === "#apply-btn") return origQuerySelector("#apply-coupon-btn");
+  if (sel === "#cart-total") return origQuerySelector("#cart-total-price");
+  if (sel === "#cart-panel") return origQuerySelector("#cart-card");
+  if (sel === "#annotations-card") return origQuerySelector("#tool-hints-card");
+  if (sel === "#explorer") return origQuerySelector("#explorer-card");
+  if (sel === "#action-bar") return origQuerySelector("#shop-test-bar");
+  return origQuerySelector(sel);
+};
+
+const statusEl = document.getElementById("mcp-status");
+const logEl = document.getElementById("mcp-log");
+const toastEl = document.getElementById("shop-toast");
+
+function showToast(msg) {
+  toastEl.textContent = msg;
+  toastEl.classList.add("show");
+  setTimeout(() => toastEl.classList.remove("show"), 2000);
+}
+
+// ==========================================
+// 2. E-Commerce Storefront State & Logic
+// ==========================================
+const PRODUCTS = [
+  { id: "p1", name: "에코버드 이어폰", category: "이어폰", price: 89000, desc: "저전력 블루투스 5.4, 36시간 배터리" },
+  { id: "p2", name: "스튜디오 프로 이어폰", category: "이어폰", price: 249000, desc: "하이브리드 ANC, 무선 충전 케이스" },
+  { id: "p3", name: "라이트북 14", category: "노트북", price: 1250000, desc: "1.1kg, 18시간 배터리, OLED" },
+  { id: "p4", name: "라이트북 14 라이트", category: "노트북", price: 790000, desc: "학생용, 풀사이즈 키보드" },
+  { id: "p5", name: "멀티패드 독", category: "주변기기", price: 64000, desc: "11포트 USB-C 독, 100W PD" },
+  { id: "p6", name: "슬림 트랙패드", category: "주변기기", price: 49000, desc: "유리 멀티터치, 블루투스 듀얼 페어링" },
+];
+
+const REVIEWS = {
+  p1: "배터리가 정말 오래갑니다. 다만 이어팁이 작아요."
+};
+
+const VALID_COUPONS = {
+  "WEBMCP10": 0.10,
+  "WELCOME20": 0.20
+};
+
+const state = {
+  filter: { category: "", maxPrice: 300000, search: "" },
+  cart: [],
+  appliedCoupon: null
+};
+
+const gridEl = document.getElementById("product-grid");
+const cartItemsEl = document.getElementById("cart-items");
+const cartCountEl = document.getElementById("cart-count");
+const cartTotalEl = document.getElementById("cart-total-price");
+const discountBadgeEl = document.getElementById("discount-badge");
+
+function inFilter(p) {
+  const matchCategory = !state.filter.category || p.category === state.filter.category;
+  const matchPrice = p.price <= state.filter.maxPrice;
+  const matchSearch = !state.filter.search || 
+    (p.name + p.desc + p.category).toLowerCase().includes(state.filter.search.toLowerCase());
+  return matchCategory && matchPrice && matchSearch;
+}
+
+function calculateCartTotals() {
+  const subtotal = state.cart.reduce((sum, item) => sum + item.price, 0);
+  let discount = 0;
+  if (state.appliedCoupon && VALID_COUPONS[state.appliedCoupon]) {
+    discount = Math.round(subtotal * VALID_COUPONS[state.appliedCoupon]);
+  }
+  const total = Math.max(0, subtotal - discount);
+  return { subtotal, discount, total };
+}
+
+function renderCart() {
+  cartCountEl.textContent = state.cart.length;
+  cartItemsEl.innerHTML = "";
+
+  if (state.cart.length === 0) {
+    cartItemsEl.innerHTML = '<span class="cart-empty-text">장바구니가 비어 있습니다.</span>';
+    cartTotalEl.textContent = "0원";
+    discountBadgeEl.style.display = "none";
+    return;
+  }
+
+  for (const item of state.cart) {
+    const row = document.createElement("div");
+    row.className = "cart-item-row";
+    row.innerHTML = `
+      <span>${item.name} (${item.category})</span>
+      <b>${item.price.toLocaleString()}원</b>
+    `;
+    cartItemsEl.append(row);
+  }
+
+  const { discount, total } = calculateCartTotals();
+  if (discount > 0) {
+    discountBadgeEl.style.display = "inline-block";
+    discountBadgeEl.textContent = `-${discount.toLocaleString()}원 (${state.appliedCoupon} 10% 할인)`;
+  } else {
+    discountBadgeEl.style.display = "none";
+  }
+
+  cartTotalEl.textContent = `${total.toLocaleString()}원`;
+}
+
+function renderProducts() {
+  gridEl.innerHTML = "";
+  for (const p of PRODUCTS) {
+    const card = document.createElement("div");
+    card.className = "product-card" + (inFilter(p) ? "" : " hidden");
+    card.id = `card-${p.id}`;
+    card.dataset.id = p.id;
+
+    card.innerHTML = `
+      <div>
+        <span class="product-category-tag">${p.category}</span>
+        <div class="product-title">${p.name}</div>
+        <div class="product-desc">${p.desc}</div>
+      </div>
+      <div class="product-footer">
+        <span class="product-price">${p.price.toLocaleString()}원</span>
+        <button class="btn-add-cart" id="btn-add-${p.id}">장바구니 담기</button>
+      </div>
+    `;
+
+    card.querySelector(".btn-add-cart").onclick = () => {
+      addToCart(p.id, "USER");
+    };
+
+    gridEl.append(card);
+  }
+}
+
+function appendLog(actor, toolName, params, result, latencyMs = 1.0, isWarning = false) {
+  const timeStr = new Date().toTimeString().split(" ")[0];
+  const entry = document.createElement("div");
+  entry.className = "log-entry";
+
+  const line = document.createElement("div");
+  line.style.display = "flex";
+  line.style.alignItems = "baseline";
+  line.style.gap = "8px";
+  line.style.flexWrap = "wrap";
+
+  const time = document.createElement("span");
+  time.className = "log-time";
+  time.textContent = `[${timeStr}]`;
+
+  const actorTag = document.createElement("span");
+  let actorClass = "actor-user";
+  if (actor === "AGENT") actorClass = "actor-agent";
+  else if (actor === "SECURITY PASS" || isWarning) actorClass = "actor-security";
+  else if (actor === "DECLARATIVE") actorClass = "actor-declarative";
+  actorTag.className = `actor-tag ${actorClass}`;
+  actorTag.textContent = actor;
+
+  const tool = document.createElement("span");
+  tool.style.color = "#38bdf8";
+  tool.style.fontWeight = "600";
+  tool.textContent = `${toolName}(${params ? JSON.stringify(params) : ""})`;
+
+  const arrow = document.createElement("span");
+  arrow.textContent = "→";
+
+  const res = document.createElement("span");
+  res.style.color = isWarning ? "#f87171" : "#4ade80";
+  res.textContent = typeof result === "object" ? JSON.stringify(result) : result;
+
+  const latency = document.createElement("span");
+  latency.style.color = "#94a3b8";
+  latency.style.fontSize = "11px";
+  latency.textContent = `[${latencyMs.toFixed(1)}ms]`;
+
+  line.append(time, actorTag, tool, arrow, res, latency);
+  entry.append(line);
+  logEl.prepend(entry);
+}
+
+// Logic Functions
+function applyFilter(category, maxPrice, searchQuery = "", actor = "USER") {
+  const startTime = performance.now();
+  state.filter.category = category || "";
+  state.filter.maxPrice = maxPrice || 300000;
+  if (searchQuery !== undefined) state.filter.search = searchQuery;
+
+  document.getElementById("f-category").value = state.filter.category;
+  document.getElementById("f-price").value = state.filter.maxPrice;
+  document.getElementById("f-price-label").textContent = `${state.filter.maxPrice.toLocaleString()}원`;
+  document.getElementById("f-search-input").value = state.filter.search;
+
+  renderProducts();
+  const visibleCount = PRODUCTS.filter(inFilter).length;
+  const resultMsg = `${state.filter.category || "전체"} / 최대 ${state.filter.maxPrice.toLocaleString()}원 → ${visibleCount}개 표시 중`;
+  appendLog(actor, "filter-products", { category, maxPrice }, resultMsg, performance.now() - startTime + 0.5);
+  return resultMsg;
+}
+
+function searchProducts(query, actor = "USER") {
+  const startTime = performance.now();
+  const results = PRODUCTS.filter((p) => 
+    (p.name + p.desc + p.category).toLowerCase().includes(query.toLowerCase())
+  );
+  appendLog(actor, "search-products", { query }, `${results.length}개 검색됨`, performance.now() - startTime + 0.6);
+  return results;
+}
+
+function addToCart(productId, actor = "USER") {
+  const startTime = performance.now();
+  const p = PRODUCTS.find((x) => x.id === productId);
+  if (!p) {
+    const errorMsg = `상품 ${productId} 없음`;
+    appendLog(actor, "add-to-cart", { productId }, errorMsg, 0.4);
+    return errorMsg;
+  }
+  state.cart.push(p);
+  renderCart();
+  const resultMsg = `${p.name} 장바구니 추가 — 총 ${state.cart.length}개`;
+  appendLog(actor, "add-to-cart", { productId }, resultMsg, performance.now() - startTime + 0.7);
+  return resultMsg;
+}
+
+function applyCoupon(code, actor = "USER") {
+  const startTime = performance.now();
+  const normalized = (code || "").trim().toUpperCase();
+  if (!VALID_COUPONS[normalized]) {
+    const errorMsg = `유효하지 않은 쿠폰 코드: ${code}`;
+    appendLog(actor, "apply-coupon", { code }, errorMsg, 0.5);
+    return errorMsg;
+  }
+  state.appliedCoupon = normalized;
+  document.getElementById("coupon-input").value = normalized;
+  renderCart();
+  const { discount, total } = calculateCartTotals();
+  const resultMsg = `쿠폰 '${normalized}' 적용 완료: -${discount.toLocaleString()}원 (최종 합계: ${total.toLocaleString()}원)`;
+  appendLog(actor, "apply-coupon", { code: normalized }, resultMsg, performance.now() - startTime + 0.6);
+  return resultMsg;
+}
+
+// Modal handling for consequential checkout
+let pendingCheckoutResolver = null;
+const checkoutModal = document.getElementById("checkout-modal");
+const modalAmountDisplay = document.getElementById("modal-amount-display");
+
+function requestCheckoutWithConfirmation(actor = "USER") {
+  if (state.cart.length === 0) {
+    appendLog(actor, "checkout", null, "장바구니가 비어 있어 결제할 수 없습니다.", 0.3);
+    return Promise.resolve("장바구니가 비어 있습니다.");
+  }
+
+  const { total } = calculateCartTotals();
+  modalAmountDisplay.textContent = `${total.toLocaleString()}원`;
+  checkoutModal.classList.add("show");
+
+  return new Promise((resolve) => {
+    pendingCheckoutResolver = { resolve, actor, total };
+  });
+}
+
+document.getElementById("btn-confirm-checkout").addEventListener("click", () => {
+  if (pendingCheckoutResolver) {
+    const { resolve, actor, total } = pendingCheckoutResolver;
+    const items = state.cart.map((p) => p.name).join(", ");
+    state.cart = [];
+    state.appliedCoupon = null;
+    document.getElementById("coupon-input").value = "";
+    renderCart();
+    checkoutModal.classList.remove("show");
+
+    const resultMsg = `결제 완료: ${items} — 최종 승인 금액 ${total.toLocaleString()}원`;
+    appendLog("SECURITY PASS", "checkout", null, resultMsg, 1.2);
+    resolve(resultMsg);
+    pendingCheckoutResolver = null;
+    showToast("주문 및 결제가 완료되었습니다!");
+  }
+});
+
+document.getElementById("btn-cancel-checkout").addEventListener("click", () => {
+  if (pendingCheckoutResolver) {
+    const { resolve } = pendingCheckoutResolver;
+    checkoutModal.classList.remove("show");
+    appendLog("SECURITY", "checkout", null, "사용자에 의해 결제 승인이 거절되었습니다.", 0.5, true);
+    resolve("결제 취소됨 (사용자 승인 거절)");
+    pendingCheckoutResolver = null;
+    showToast("결제가 취소되었습니다.");
+  }
+});
+
+function summarizeReview(productId, actor = "USER") {
+  const startTime = performance.now();
+  const r = REVIEWS[productId];
+  const summary = r 
+    ? `"${r}" (한 줄 요약: 배터리 만족, 이어팁 아쉬움) [untrustedContentHint 적용]`
+    : "등록된 리뷰가 없습니다.";
+  appendLog(actor, "summarize-review", { productId }, summary, performance.now() - startTime + 0.8);
+  return summary;
+}
+
+// Event Bindings for User UI
+document.getElementById("f-category").onchange = (e) => {
+  applyFilter(e.target.value, state.filter.maxPrice, state.filter.search, "USER");
+};
+document.getElementById("f-price").oninput = (e) => {
+  applyFilter(state.filter.category, +e.target.value, state.filter.search, "USER");
+};
+document.getElementById("f-search-input").oninput = (e) => {
+  applyFilter(state.filter.category, state.filter.maxPrice, e.target.value, "USER");
+};
+document.getElementById("apply-coupon-btn").onclick = () => {
+  const code = document.getElementById("coupon-input").value;
+  applyCoupon(code, "USER");
+};
+document.getElementById("checkout-btn").onclick = () => {
+  requestCheckoutWithConfirmation("USER");
+};
+document.getElementById("clear-shop-log").onclick = () => {
+  logEl.innerHTML = "";
+  showToast("감사 로그가 초기화되었습니다.");
+};
+
+// Declarative Form Event
+document.getElementById("support-form").addEventListener("submit", (e) => {
+  e.preventDefault();
+  const form = e.target;
+  const fd = new FormData(form);
+  const summary = `고객 문의 접수: ${fd.get("firstName")} / ${fd.get("topic")}`;
+  
+  if (e.agentInvoked) {
+    appendLog("DECLARATIVE", "support-request", { name: fd.get("firstName"), topic: fd.get("topic") }, summary + " (AI 에이전트 자동 호출)");
+    if (e.respondWith) {
+      e.respondWith(Promise.resolve(summary + " — 데모 로그에 기록했습니다. 외부 전송은 하지 않습니다."));
+    }
+  } else {
+    appendLog("USER", "support-request", { name: fd.get("firstName"), topic: fd.get("topic") }, summary + " (사용자 직접 제출)");
+    showToast("문의 내용을 데모 로그에 기록했습니다.");
+  }
+  form.reset();
+});
+
+// ==========================================
+// 3. WebMCP Lifecycle & Tool Registration
+// ==========================================
+let toolsController = null;
+
+async function refreshToolList() {
+  const explorerList = document.getElementById("tool-list");
+  explorerList.innerHTML = "";
+  const tools = await document.modelContext.getTools();
+  
+  for (const t of tools) {
+    const row = document.createElement("div");
+    row.className = "explorer-row";
+
+    const nameSpan = document.createElement("span");
+    nameSpan.className = "explorer-tool-name";
+    nameSpan.textContent = t.name;
+
+    const input = document.createElement("input");
+    input.className = "explorer-input";
+    input.placeholder = t.annotations?.readOnlyHint ? '예: {"query": "이어폰"}' : '인자 JSON';
+    if (t.name === "filter-products") input.value = '{"category":"이어폰","maxPrice":100000}';
+    if (t.name === "add-to-cart") input.value = '{"productId":"p1"}';
+    if (t.name === "apply-coupon") input.value = '{"code":"WEBMCP10"}';
+    if (t.name === "summarize-review") input.value = '{"productId":"p1"}';
+
+    const runBtn = document.createElement("button");
+    runBtn.className = "explorer-btn";
+    runBtn.textContent = "호출";
+    runBtn.onclick = async () => {
+      let args = {};
+      try { args = input.value ? JSON.parse(input.value) : {}; } catch { showToast("JSON 파싱 에러"); return; }
+      const res = await document.modelContext.executeTool(t.name, args);
+      showToast(`${t.name} 호출 완료`);
+    };
+
+    row.append(nameSpan, input, runBtn);
+    explorerList.append(row);
+  }
+}
+
+async function enableTools() {
+  toolsController = new AbortController();
+  const { signal } = toolsController;
+
+  // 1. search-products (readOnlyHint)
+  await document.modelContext.registerTool({
+    name: "search-products",
+    description: "이름·설명·카테고리로 상품을 검색해 목록을 반환한다.",
+    inputSchema: {
+      type: "object",
+      properties: { query: { type: "string", description: "검색어" } },
+      required: ["query"]
+    },
+    annotations: { readOnlyHint: true },
+    execute({ query }) {
+      return JSON.stringify(searchProducts(query, "AGENT"));
+    }
+  }, { signal });
+
+  // 2. filter-products (UI Mutation)
+  await document.modelContext.registerTool({
+    name: "filter-products",
+    description: "화면의 상품 그리드를 카테고리와 최대 가격으로 필터링한다.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        category: { type: "string", enum: ["이어폰", "노트북", "주변기기"], description: "카테고리" },
+        maxPrice: { type: "number", description: "최대 가격" }
+      }
+    },
+    execute({ category, maxPrice }) {
+      return applyFilter(category, maxPrice, "", "AGENT");
+    }
+  }, { signal });
+
+  // 3. add-to-cart (Cart Mutation)
+  await document.modelContext.registerTool({
+    name: "add-to-cart",
+    description: "지정된 상품 ID를 사용자의 장바구니에 추가한다.",
+    inputSchema: {
+      type: "object",
+      properties: { productId: { type: "string", description: "상품 id (예: p1~p6)" } },
+      required: ["productId"]
+    },
+    execute({ productId }) {
+      return addToCart(productId, "AGENT");
+    }
+  }, { signal });
+
+  // 4. apply-coupon (Discount Mutation)
+  await document.modelContext.registerTool({
+    name: "apply-coupon",
+    description: "프로모션 할인 쿠폰 코드를 적용한다.",
+    inputSchema: {
+      type: "object",
+      properties: { code: { type: "string", description: "쿠폰 코드 (예: WEBMCP10)" } },
+      required: ["code"]
+    },
+    execute({ code }) {
+      return applyCoupon(code, "AGENT");
+    }
+  }, { signal });
+
+  // 5. checkout (consequentialHint: true)
+  await document.modelContext.registerTool({
+    name: "checkout",
+    description: "장바구니의 모든 상품을 결제한다. 결제 전 사용자 승인 모달이 트리거된다.",
+    annotations: { readOnlyHint: false, consequentialHint: true },
+    execute() {
+      return requestCheckoutWithConfirmation("AGENT");
+    }
+  }, { signal });
+
+  // 6. summarize-review (untrustedContentHint: true)
+  await document.modelContext.registerTool({
+    name: "summarize-review",
+    description: "상품에 달린 사용자 리뷰를 요약한다.",
+    inputSchema: {
+      type: "object",
+      properties: { productId: { type: "string", description: "상품 id" } },
+      required: ["productId"]
+    },
+    annotations: { readOnlyHint: true, untrustedContentHint: true },
+    execute({ productId }) {
+      return summarizeReview(productId, "AGENT");
+    }
+  }, { signal });
+
+  const statusMode = isNativeWorking ? "Native API 감지" : "Simulation Mode";
+  statusEl.className = isNativeWorking ? "pill on" : "pill status-shim";
+  document.getElementById("status-text").textContent = `WebMCP Active (${statusMode}) — 6 Tools + Declarative Form`;
+  appendLog("SYSTEM", "WebMCP Ready", null, `도구 6종 + Declarative Form 활성화 (${statusMode})`, 0.2);
+  await refreshToolList();
+}
+
+function disableTools() {
+  if (toolsController) {
+    toolsController.abort();
+    toolsController = null;
+    statusEl.className = "pill off";
+    document.getElementById("status-text").textContent = "명령형 도구 해제됨 · 문의 폼 유지";
+    appendLog("SYSTEM", "Lifecycle Aborted", null, "AbortController로 명령형 도구 6종 해제 · 문의 폼 유지", 0.4);
+    refreshToolList();
+  }
+}
+
+const toggleEl = document.getElementById("tools-toggle");
+toggleEl.addEventListener("change", (e) => {
+  if (e.target.checked) {
+    enableTools();
+  } else {
+    disableTools();
+  }
+});
+
+// Initialize
+renderProducts();
+renderCart();
+enableTools();
+
+// ==========================================
+// 4. Quick-test Action Bar Handlers
+// ==========================================
+document.querySelectorAll("[data-payload]").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const payload = btn.getAttribute("data-payload");
+    navigator.clipboard?.writeText(payload);
+    showToast(`프롬프트 복사됨: "${payload}"`);
+  });
+});
+
+document.getElementById("btn-test-filter").addEventListener("click", async () => {
+  await document.modelContext.executeTool("filter-products", { category: "이어폰", maxPrice: 100000 });
+  showToast("filter-products 도구 호출 완료");
+});
+
+document.getElementById("btn-test-coupon").addEventListener("click", async () => {
+  if (state.cart.length === 0) {
+    addToCart("p1", "AGENT");
+  }
+  await document.modelContext.executeTool("apply-coupon", { code: "WEBMCP10" });
+  showToast("apply-coupon 도구 호출 완료");
+});
+
+document.getElementById("btn-test-checkout").addEventListener("click", async () => {
+  if (state.cart.length === 0) {
+    addToCart("p1", "AGENT");
+  }
+  showToast("checkout 도구 호출 (승인 모달 활성화)");
+  await document.modelContext.executeTool("checkout", {});
+});
+
+// Global debug handles
+window._state = state;
+window._PRODUCTS = PRODUCTS;
+window._addToCart = addToCart;
+window._applyFilter = applyFilter;
+window._applyCoupon = applyCoupon;
+window._requestCheckout = requestCheckoutWithConfirmation;
+</script>
+</body>
+</html>

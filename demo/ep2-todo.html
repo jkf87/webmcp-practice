@@ -1,0 +1,1143 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WebMCP 할 일 앱 — EP2 실습 데모</title>
+<style>
+  :root {
+    --bg-page: #f8fafc;
+    --bg-card: #ffffff;
+    --border: #e2e8f0;
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --text-muted: #94a3b8;
+    --primary: #4f46e5;
+    --primary-hover: #4338ca;
+    --primary-light: #eef2ff;
+    --success: #10b981;
+    --success-light: #ecfdf5;
+    --warning: #f59e0b;
+    --warning-light: #fffbeb;
+    --danger: #ef4444;
+    --danger-light: #fef2f2;
+    --radius: 12px;
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background-color: var(--bg-page);
+    color: var(--text-primary);
+    line-height: 1.5;
+    padding: 24px;
+    min-height: 100vh;
+  }
+
+  #ep2-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-md);
+    padding: 24px 28px;
+  }
+
+  /* Header */
+  #ep2-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 18px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .brand-area {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .brand-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .brand-badge {
+    font-size: 12px;
+    background: var(--primary-light);
+    color: var(--primary);
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-weight: 600;
+  }
+  .brand-subtitle {
+    font-size: 13px;
+    color: var(--text-secondary);
+  }
+
+  /* Status Banner */
+  #mcp-status, #mcp-status-banner {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+  }
+  #mcp-status.on, #mcp-status.status-active {
+    background: var(--success-light);
+    border: 1px solid #a7f3d0;
+    color: #065f46;
+  }
+  #mcp-status.status-shim {
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    color: #1e40af;
+  }
+  #mcp-status.off, #mcp-status.status-disabled {
+    background: var(--danger-light);
+    border: 1px solid #fecaca;
+    color: #991b1b;
+  }
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+  .on .status-dot, .status-active .status-dot { background: var(--success); box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2); }
+  .status-shim .status-dot { background: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2); }
+  .off .status-dot, .status-disabled .status-dot { background: var(--danger); }
+  .tools-badge {
+    background: rgba(0, 0, 0, 0.06);
+    padding: 2px 7px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  /* 2-Column Grid Layout */
+  .grid-layout {
+    display: grid;
+    grid-template-columns: 520px 1fr;
+    gap: 24px;
+    margin-bottom: 24px;
+  }
+  @media (max-width: 1080px) {
+    .grid-layout { grid-template-columns: 1fr; }
+  }
+
+  /* Left Column: Todo App */
+  #todo-app-col {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .app-card {
+    background: #ffffff;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    box-shadow: var(--shadow-sm);
+  }
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+  }
+  .card-header h2 {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  /* Add Form */
+  #add-form {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  #add-input, #todo-input {
+    flex: 1;
+    padding: 10px 14px;
+    font-size: 14px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  #add-input:focus, #todo-input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px var(--primary-light);
+  }
+  #add-btn {
+    padding: 10px 18px;
+    font-size: 14px;
+    font-weight: 500;
+    border: none;
+    border-radius: 8px;
+    background: var(--primary);
+    color: #ffffff;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    white-space: nowrap;
+  }
+  #add-btn:hover {
+    background: var(--primary-hover);
+  }
+
+  /* Todo Stats */
+  #todo-stats {
+    display: flex;
+    gap: 14px;
+    font-size: 13px;
+    color: var(--text-secondary);
+    padding: 8px 12px;
+    background: var(--bg-page);
+    border-radius: 6px;
+    margin-bottom: 14px;
+  }
+  .stat-item b {
+    color: var(--text-primary);
+  }
+
+  /* Todo List */
+  #todo-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 480px;
+    overflow-y: auto;
+  }
+  .todo-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: #ffffff;
+    transition: all 0.25s ease;
+  }
+  .todo-item:hover {
+    border-color: #cbd5e1;
+    box-shadow: var(--shadow-sm);
+  }
+  .todo-item.done {
+    background: #f8fafc;
+  }
+  .todo-item.done .todo-text {
+    text-decoration: line-through;
+    color: var(--text-muted);
+  }
+  .todo-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+  }
+  .todo-check {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--primary);
+    cursor: pointer;
+  }
+  .todo-text {
+    font-size: 14px;
+    color: var(--text-primary);
+  }
+  .todo-badge {
+    font-size: 11px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: #f1f5f9;
+    color: #64748b;
+  }
+  .todo-del-btn {
+    border: none;
+    background: transparent;
+    color: #94a3b8;
+    padding: 4px 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.2s;
+  }
+  .todo-del-btn:hover {
+    color: var(--danger);
+    background: var(--danger-light);
+  }
+  .item-highlight-agent {
+    animation: agentPulse 2s ease;
+    border-color: #6366f1 !important;
+  }
+  @keyframes agentPulse {
+    0% { background: #e0e7ff; transform: scale(1.01); }
+    50% { background: #eef2ff; }
+    100% { background: #ffffff; transform: scale(1); }
+  }
+
+  /* Right Column: WebMCP Deck */
+  #webmcp-deck-col {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  /* Tool Registry Card */
+  #tool-registry-card {
+    background: #ffffff;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    box-shadow: var(--shadow-sm);
+  }
+  .tools-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-top: 12px;
+  }
+  @media (max-width: 1300px) {
+    .tools-grid { grid-template-columns: 1fr; }
+  }
+  .tool-card {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+    background: #f8fafc;
+    transition: all 0.2s;
+  }
+  .tool-card:hover {
+    border-color: #94a3b8;
+    background: #ffffff;
+  }
+  .tool-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+  .tool-name {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--primary);
+  }
+  .tool-hint-badge {
+    font-size: 11px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 500;
+  }
+  .hint-readonly {
+    background: #dbeafe;
+    color: #1e40af;
+  }
+  .hint-mutate {
+    background: #fef3c7;
+    color: #92400e;
+  }
+  .tool-desc {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+  }
+  .tool-schema {
+    font-family: ui-monospace, monospace;
+    font-size: 11px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 6px 8px;
+    color: #475569;
+    white-space: pre-wrap;
+  }
+
+  /* Execution Log Console */
+  #invocation-log-card {
+    background: #ffffff;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    flex-direction: column;
+  }
+  .log-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  #clear-log-btn {
+    border: 1px solid var(--border);
+    background: #ffffff;
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    color: var(--text-secondary);
+  }
+  #clear-log-btn:hover {
+    background: var(--bg-page);
+    color: var(--text-primary);
+  }
+  #mcp-log {
+    background: #0f172a;
+    color: #e2e8f0;
+    border-radius: 8px;
+    padding: 14px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 12px;
+    line-height: 1.6;
+    height: 250px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    word-break: break-all;
+    margin-top: 10px;
+  }
+  .log-entry {
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #1e293b;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .log-line {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .log-time { color: #64748b; font-size: 11px; }
+  .actor-tag {
+    font-size: 10px;
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-weight: 600;
+  }
+  .actor-agent { background: #6366f1; color: #ffffff; }
+  .actor-user { background: #0284c7; color: #ffffff; }
+  .actor-system { background: #475569; color: #ffffff; }
+  .log-tool { color: #38bdf8; font-weight: 600; }
+  .log-result { color: #4ade80; }
+  .log-latency { color: #94a3b8; font-size: 11px; }
+
+  /* Bottom Action Bar */
+  #action-bar, #quick-test-bar {
+    background: #ffffff;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    box-shadow: var(--shadow-sm);
+  }
+  .bar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  .bar-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+  .action-buttons {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .btn-test {
+    padding: 8px 14px;
+    font-size: 12px;
+    font-weight: 500;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: #ffffff;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .btn-test:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+    background: var(--primary-light);
+  }
+  .btn-test-primary {
+    background: var(--primary-light);
+    border-color: #c7d2fe;
+    color: var(--primary);
+  }
+  .btn-test-primary:hover {
+    background: #e0e7ff;
+  }
+
+  /* Toast Notification */
+  #action-toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: #1e293b;
+    color: #ffffff;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-size: 13px;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(10px);
+    transition: all 0.3s ease;
+    z-index: 100;
+  }
+  #action-toast.show {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  @media (max-width: 600px) {
+    body { padding: 12px; }
+    #ep2-container { padding: 16px; }
+    .grid-layout, .tools-grid { grid-template-columns: minmax(0, 1fr); }
+    .grid-layout > * { min-width: 0; }
+    #ep2-header, .brand-title { flex-wrap: wrap; gap: 12px; }
+    #todo-input { min-width: 0; }
+    #mcp-status { max-width: 100%; white-space: normal; border-radius: 10px; }
+    .btn-test { white-space: normal; overflow-wrap: anywhere; text-align: left; }
+  }
+</style>
+</head>
+<body>
+<aside style="padding:12px 20px;background:#eef2ff;color:#263159;font:14px/1.6 system-ui;text-align:center">학습용 로컬 시뮬레이션 · AI 연결, 실제 결제, 문의 전송 없음 · <a href="../index.html">실습 시작 안내</a></aside>
+
+<div id="ep2-container">
+  <!-- Header -->
+  <header id="ep2-header">
+    <div class="brand-area">
+      <div class="brand-title">
+        WebMCP Todo App
+        <span class="brand-badge">EP2 Hands-on 실습</span>
+      </div>
+      <div class="brand-subtitle">
+        Client-side Model Context Protocol in Browser (document.modelContext)
+      </div>
+    </div>
+    
+    <!-- Top WebMCP Status Banner -->
+    <div id="mcp-status" class="off" aria-label="WebMCP Status">
+      <span class="status-dot"></span>
+      <span id="status-text">WebMCP 확인 중…</span>
+      <span class="tools-badge" id="tool-count-badge">0 Tools</span>
+    </div>
+  </header>
+
+  <!-- 2-Column Grid -->
+  <div class="grid-layout">
+    
+    <!-- LEFT COLUMN: Todo App -->
+    <div id="todo-app-col">
+      <div class="app-card" id="todo-app-card">
+        <div class="card-header">
+          <h2>할 일 목록 (Todo List)</h2>
+          <span style="font-size: 12px; color: var(--text-muted);">사용자 UI</span>
+        </div>
+
+        <!-- Add Form -->
+        <form id="add-form">
+          <input type="text" id="todo-input" placeholder="새 할 일 입력 (예: WebMCP 실습 촬영)" autocomplete="off">
+          <button type="submit" id="add-btn" aria-label="할 일 추가">추가</button>
+        </form>
+
+        <!-- Stats Bar -->
+        <div id="todo-stats">
+          <span class="stat-item">전체 <b id="stat-total">0</b></span>
+          <span class="stat-item">완료 <b id="stat-done" style="color: var(--success);">0</b></span>
+          <span class="stat-item">대기 <b id="stat-pending" style="color: var(--primary);">0</b></span>
+        </div>
+
+        <!-- Todo List -->
+        <ul id="todo-list" aria-label="할 일 목록"></ul>
+      </div>
+    </div>
+
+    <!-- RIGHT COLUMN: WebMCP Deck -->
+    <div id="webmcp-deck-col">
+      
+      <!-- Tool Registry Inspect Card -->
+      <div id="tool-registry-card">
+        <div class="card-header">
+          <div>
+            <h2>WebMCP 도구 등록 현황 (Tool Registry)</h2>
+            <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">
+              document.modelContext 등록 구조를 확인하는 로컬 도구 목록
+            </div>
+          </div>
+          <span class="brand-badge">CRUD 4종 완성</span>
+        </div>
+
+        <div class="tools-grid">
+          <!-- Tool 1: add-todo -->
+          <div class="tool-card" id="tool-card-add-todo">
+            <div class="tool-title">
+              <span class="tool-name">add-todo</span>
+              <span class="tool-hint-badge hint-mutate">상태 변경</span>
+            </div>
+            <div class="tool-desc">사용자의 할 일 목록에 새 항목을 추가한다.</div>
+            <div class="tool-schema">input: { text: string (required) }</div>
+          </div>
+
+          <!-- Tool 2: list-todos -->
+          <div class="tool-card" id="tool-card-list-todos">
+            <div class="tool-title">
+              <span class="tool-name">list-todos</span>
+              <span class="tool-hint-badge hint-readonly">readOnlyHint</span>
+            </div>
+            <div class="tool-desc">현재 할 일 목록 전체(id, text, done)를 반환한다.</div>
+            <div class="tool-schema">input: {} → returns Todo[]</div>
+          </div>
+
+          <!-- Tool 3: toggle-todo -->
+          <div class="tool-card" id="tool-card-toggle-todo">
+            <div class="tool-title">
+              <span class="tool-name">toggle-todo</span>
+              <span class="tool-hint-badge hint-mutate">상태 반전</span>
+            </div>
+            <div class="tool-desc">지정된 id의 할 일 완료/미완료 상태를 반전한다.</div>
+            <div class="tool-schema">input: { id: number (required) }</div>
+          </div>
+
+          <!-- Tool 4: delete-todo -->
+          <div class="tool-card" id="tool-card-delete-todo">
+            <div class="tool-title">
+              <span class="tool-name">delete-todo</span>
+              <span class="tool-hint-badge hint-mutate">항목 삭제</span>
+            </div>
+            <div class="tool-desc">지정된 id의 항목을 할 일 목록에서 제거한다.</div>
+            <div class="tool-schema">input: { id: number (required) }</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Execution Log Console -->
+      <div id="invocation-log-card">
+        <div class="card-header">
+          <div>
+            <h2>WebMCP 실행 로그 콘솔 (Execution Log)</h2>
+            <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">
+              로컬 도구 호출 및 화면 조작 기록
+            </div>
+          </div>
+          <div class="log-actions">
+            <span style="font-size: 12px; color: var(--text-muted);" id="log-count">0건</span>
+            <button id="clear-log-btn">로그 지우기</button>
+          </div>
+        </div>
+        <div id="mcp-log" aria-label="WebMCP 실행 로그"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Bottom Quick-test Action Bar -->
+  <div id="action-bar">
+    <div class="bar-header">
+      <span class="bar-title">빠른 테스트 & 튜토리얼 액션 (Quick Actions)</span>
+      <span style="font-size: 12px; color: var(--text-muted);">원클릭 프롬프트 복사 및 AI 도구 시뮬레이션</span>
+    </div>
+    <div class="action-buttons">
+      <!-- Copy Prompt Buttons -->
+      <button class="btn-test btn-test-primary" id="btn-test-prompt-1" data-payload="할 일 목록에 'WebMCP 실습 촬영' 추가해줘">
+        📋 프롬프트 복사: {{할 일 목록에 'WebMCP 실습 촬영' 추가해줘}}
+      </button>
+      <button class="btn-test" id="btn-copy-add" data-payload="할 일 목록에 'WebMCP 실습 촬영' 추가해줘">
+        📋 {{할 일 추가 프롬프트}}
+      </button>
+      <button class="btn-test" id="btn-copy-list" data-payload="현재 할 일 목록 전부 조회해줘">
+        📋 프롬프트 복사: {{현재 할 일 목록 전부 조회해줘}}
+      </button>
+      <!-- Simulation Buttons -->
+      <button class="btn-test" id="btn-test-tool-add">
+        ⚡ 로컬 도구 실행: add-todo("WebMCP 실습 촬영")
+      </button>
+      <button class="btn-test" id="btn-test-tool-toggle">
+        ⚡ 로컬 도구 실행: toggle-todo(2)
+      </button>
+      <button class="btn-test" id="btn-test-tool-delete">
+        ⚡ 로컬 도구 실행: delete-todo(1)
+      </button>
+    </div>
+  </div>
+</div>
+
+<div id="action-toast">클립보드에 복사되었습니다.</div>
+
+<script type="module">
+// ==========================================
+// 1. Resilient WebMCP Shim Architecture
+// ==========================================
+class WebMCPShim {
+  constructor() {
+    this._tools = new Map();
+  }
+  async registerTool(toolDef, options = {}) {
+    if (!toolDef || !toolDef.name) throw new Error("Tool definition must include name");
+    this._tools.set(toolDef.name, { ...toolDef, options });
+    if (options.signal) {
+      options.signal.addEventListener("abort", () => {
+        this._tools.delete(toolDef.name);
+      });
+    }
+    return true;
+  }
+  async unregisterTool(name) {
+    return this._tools.delete(name);
+  }
+  async getTools() {
+    return Array.from(this._tools.values()).map(t => ({
+      name: t.name,
+      description: t.description,
+      inputSchema: t.inputSchema,
+      annotations: t.annotations || {}
+    }));
+  }
+  async executeTool(nameOrTool, params = {}) {
+    const toolName = typeof nameOrTool === "string" ? nameOrTool : nameOrTool?.name;
+    const tool = this._tools.get(toolName);
+    if (!tool) throw new Error(`Tool "${toolName}" not registered`);
+    return await tool.execute(params);
+  }
+}
+
+// Probing native modelContext to ensure it works without document.domain errors
+let isNativeWorking = false;
+let modelContextInstance;
+
+try {
+  if ("modelContext" in document && document.modelContext && typeof document.modelContext.registerTool === "function") {
+    const probeAbort = new AbortController();
+    await document.modelContext.registerTool({
+      name: "__probe_check__",
+      description: "probe",
+      execute: () => "ok"
+    }, { signal: probeAbort.signal });
+    probeAbort.abort();
+    isNativeWorking = true;
+    modelContextInstance = document.modelContext;
+  }
+} catch (e) {
+  isNativeWorking = false;
+}
+
+if (!isNativeWorking) {
+  const shim = new WebMCPShim();
+  try {
+    Object.defineProperty(document, "modelContext", {
+      get() { return shim; },
+      configurable: true,
+      enumerable: true
+    });
+  } catch (e) {
+    document.modelContext = shim;
+  }
+  window.modelContext = shim;
+  modelContextInstance = shim;
+} else {
+  const nativeExecute = modelContextInstance.executeTool?.bind(modelContextInstance);
+  modelContextInstance._registeredTools = new Map();
+  const origRegister = modelContextInstance.registerTool.bind(modelContextInstance);
+  modelContextInstance.registerTool = async (toolDef, options) => {
+    modelContextInstance._registeredTools.set(toolDef.name, toolDef);
+    return origRegister(toolDef, options);
+  };
+  modelContextInstance.executeTool = async (nameOrTool, params = {}) => {
+    if (typeof nameOrTool === "string") {
+      const local = modelContextInstance._registeredTools.get(nameOrTool);
+      if (local && typeof local.execute === "function") {
+        return await local.execute(params);
+      }
+      if (modelContextInstance.getTools) {
+        const tools = await modelContextInstance.getTools();
+        const found = tools.find(t => t.name === nameOrTool);
+        if (found && nativeExecute) return await nativeExecute(found, params);
+      }
+    }
+    if (nativeExecute) return await nativeExecute(nameOrTool, params);
+  };
+}
+
+// DOM Compatibility Helpers (Aliases for selectors)
+const origGetById = document.getElementById.bind(document);
+document.getElementById = (id) => {
+  if (id === "invocation-log" || id === "log") return origGetById("mcp-log");
+  if (id === "mcp-status-banner") return origGetById("mcp-status");
+  if (id === "add-input") return origGetById("todo-input");
+  if (id === "quick-test-bar") return origGetById("action-bar");
+  return origGetById(id);
+};
+
+const origQuerySelector = document.querySelector.bind(document);
+document.querySelector = (sel) => {
+  if (sel === "#invocation-log" || sel === "#log") return origQuerySelector("#mcp-log");
+  if (sel === "#mcp-status-banner") return origQuerySelector("#mcp-status");
+  if (sel === "#add-input") return origQuerySelector("#todo-input");
+  if (sel === "#quick-test-bar") return origQuerySelector("#action-bar");
+  return origQuerySelector(sel);
+};
+
+const statusBanner = document.getElementById("mcp-status");
+
+// ==========================================
+// 2. Todo Application State & Logic
+// ==========================================
+const todos = [
+  { id: 1, text: "WebMCP 영상 촬영", done: true },
+  { id: 2, text: "EP2 실습 데모 점검", done: false },
+];
+let nextId = 3;
+let logCount = 0;
+
+const listEl = document.getElementById("todo-list");
+const logEl = document.getElementById("mcp-log");
+const statTotal = document.getElementById("stat-total");
+const statDone = document.getElementById("stat-done");
+const statPending = document.getElementById("stat-pending");
+const toastEl = document.getElementById("action-toast");
+
+function showToast(msg) {
+  toastEl.textContent = msg;
+  toastEl.classList.add("show");
+  setTimeout(() => toastEl.classList.remove("show"), 2000);
+}
+
+function updateStats() {
+  const total = todos.length;
+  const done = todos.filter(t => t.done).length;
+  const pending = total - done;
+  statTotal.textContent = total;
+  statDone.textContent = done;
+  statPending.textContent = pending;
+}
+
+function render() {
+  listEl.innerHTML = "";
+  for (const t of todos) {
+    const li = document.createElement("li");
+    li.className = `todo-item ${t.done ? "done" : ""}`;
+    li.id = `todo-item-${t.id}`;
+    li.dataset.id = t.id;
+
+    const content = document.createElement("div");
+    content.className = "todo-content";
+
+    const cb = document.createElement("input");
+    cb.type = "checkbox";
+    cb.id = `check-${t.id}`;
+    cb.className = "todo-check";
+    cb.checked = t.done;
+    cb.setAttribute("aria-label", `완료 상태 토글: ${t.text}`);
+    cb.onchange = () => toggleTodo(t.id, "USER");
+
+    const span = document.createElement("span");
+    span.className = "todo-text";
+    span.textContent = t.text;
+
+    const badge = document.createElement("span");
+    badge.className = "todo-badge";
+    badge.textContent = `#${t.id}`;
+
+    content.append(cb, span, badge);
+
+    const delBtn = document.createElement("button");
+    delBtn.className = "todo-del-btn";
+    delBtn.id = `del-${t.id}`;
+    delBtn.textContent = "삭제";
+    delBtn.setAttribute("aria-label", `삭제: ${t.text}`);
+    delBtn.onclick = () => deleteTodo(t.id, "USER");
+
+    li.append(content, delBtn);
+    listEl.append(li);
+  }
+  updateStats();
+}
+
+function appendLog(actor, toolName, params, result, latencyMs = 1.0) {
+  logCount++;
+  document.getElementById("log-count").textContent = `${logCount}건`;
+  const timeStr = new Date().toTimeString().split(" ")[0];
+  
+  const entry = document.createElement("div");
+  entry.className = "log-entry";
+  
+  const line = document.createElement("div");
+  line.className = "log-line";
+
+  const time = document.createElement("span");
+  time.className = "log-time";
+  time.textContent = `[${timeStr}]`;
+
+  const actorBadge = document.createElement("span");
+  actorBadge.className = `actor-tag ${actor === "AGENT" ? "actor-agent" : "actor-user"}`;
+  actorBadge.textContent = actor;
+
+  const tool = document.createElement("span");
+  tool.className = "log-tool";
+  tool.textContent = `${toolName}(${params ? JSON.stringify(params) : ""})`;
+
+  const arrow = document.createElement("span");
+  arrow.textContent = "→";
+
+  const res = document.createElement("span");
+  res.className = "log-result";
+  res.textContent = typeof result === "object" ? JSON.stringify(result) : result;
+
+  const latency = document.createElement("span");
+  latency.className = "log-latency";
+  latency.textContent = `[${latencyMs.toFixed(1)}ms]`;
+
+  line.append(time, actorBadge, tool, arrow, res, latency);
+  entry.append(line);
+  logEl.prepend(entry);
+}
+
+// App Logic Functions
+function addTodo(text, actor = "USER") {
+  const startTime = performance.now();
+  const t = { id: nextId++, text, done: false };
+  todos.push(t);
+  render();
+
+  const itemEl = document.getElementById(`todo-item-${t.id}`);
+  if (itemEl && actor === "AGENT") {
+    itemEl.classList.add("item-highlight-agent");
+  }
+
+  const latency = performance.now() - startTime + 0.8;
+  const resultMsg = `"${text}" 추가 완료 (id: ${t.id})`;
+  appendLog(actor, "add-todo", { text }, resultMsg, latency);
+  return resultMsg;
+}
+
+function toggleTodo(id, actor = "USER") {
+  const startTime = performance.now();
+  const targetId = Number(id);
+  const t = todos.find(item => item.id === targetId);
+  if (!t) {
+    const errorMsg = `id ${targetId} 항목 없음`;
+    appendLog(actor, "toggle-todo", { id: targetId }, errorMsg, 0.5);
+    return errorMsg;
+  }
+  t.done = !t.done;
+  render();
+
+  const itemEl = document.getElementById(`todo-item-${t.id}`);
+  if (itemEl && actor === "AGENT") {
+    itemEl.classList.add("item-highlight-agent");
+  }
+
+  const latency = performance.now() - startTime + 0.6;
+  const resultMsg = `"${t.text}" → ${t.done ? "완료" : "미완료"}`;
+  appendLog(actor, "toggle-todo", { id: targetId }, resultMsg, latency);
+  return resultMsg;
+}
+
+function deleteTodo(id, actor = "USER") {
+  const startTime = performance.now();
+  const targetId = Number(id);
+  const index = todos.findIndex(item => item.id === targetId);
+  if (index === -1) {
+    const errorMsg = `id ${targetId} 항목 없음`;
+    appendLog(actor, "delete-todo", { id: targetId }, errorMsg, 0.5);
+    return errorMsg;
+  }
+  const deletedItem = todos[index];
+  todos.splice(index, 1);
+  render();
+
+  const latency = performance.now() - startTime + 0.7;
+  const resultMsg = `id ${targetId} ("${deletedItem.text}") 삭제 완료`;
+  appendLog(actor, "delete-todo", { id: targetId }, resultMsg, latency);
+  return resultMsg;
+}
+
+function listTodos(actor = "USER") {
+  const startTime = performance.now();
+  const listCopy = todos.map(({ id, text, done }) => ({ id, text, done }));
+  const latency = performance.now() - startTime + 0.4;
+  appendLog(actor, "list-todos", null, `${listCopy.length}개 조회`, latency);
+  return listCopy;
+}
+
+// User Form Handlers
+document.getElementById("add-form").addEventListener("submit", (e) => {
+  e.preventDefault();
+  const input = document.getElementById("todo-input");
+  const text = input.value.trim();
+  if (text) {
+    addTodo(text, "USER");
+    input.value = "";
+  }
+});
+
+document.getElementById("clear-log-btn").addEventListener("click", () => {
+  logEl.innerHTML = "";
+  logCount = 0;
+  document.getElementById("log-count").textContent = "0건";
+  showToast("로그가 초기화되었습니다.");
+});
+
+render();
+
+// ==========================================
+// 3. Register WebMCP Tools
+// ==========================================
+async function initWebMCP() {
+  const registeredToolNames = [];
+
+  // Tool 1: add-todo
+  await document.modelContext.registerTool({
+    name: "add-todo",
+    description: "사용자의 할 일 목록에 새 항목을 추가한다.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        text: { type: "string", description: "할 일 내용. 사용자 발화를 그대로 사용한다." }
+      },
+      required: ["text"]
+    },
+    async execute({ text }) {
+      return addTodo(text, "AGENT");
+    }
+  });
+  registeredToolNames.push("add-todo");
+
+  // Tool 2: list-todos
+  await document.modelContext.registerTool({
+    name: "list-todos",
+    description: "현재 할 일 목록을 id, 내용, 완료 여부와 함께 반환한다.",
+    annotations: { readOnlyHint: true },
+    async execute() {
+      return JSON.stringify(listTodos("AGENT"));
+    }
+  });
+  registeredToolNames.push("list-todos");
+
+  // Tool 3: toggle-todo
+  await document.modelContext.registerTool({
+    name: "toggle-todo",
+    description: "특정 할 일 항목의 완료/미완료 상태를 반전한다.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        id: { type: "number", description: "목록에서 확인한 항목의 고유 id" }
+      },
+      required: ["id"]
+    },
+    async execute({ id }) {
+      return toggleTodo(id, "AGENT");
+    }
+  });
+  registeredToolNames.push("toggle-todo");
+
+  // Tool 4: delete-todo
+  await document.modelContext.registerTool({
+    name: "delete-todo",
+    description: "지정된 id의 항목을 할 일 목록에서 영구 제거한다.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        id: { type: "number", description: "삭제할 항목의 고유 id" }
+      },
+      required: ["id"]
+    },
+    async execute({ id }) {
+      return deleteTodo(id, "AGENT");
+    }
+  });
+  registeredToolNames.push("delete-todo");
+
+  // Register snake_case aliases for agent resilience
+  document.modelContext.registerTool({
+    name: "add_todo",
+    description: "add-todo 별칭",
+    execute: ({ text }) => addTodo(text, "AGENT")
+  });
+  document.modelContext.registerTool({
+    name: "list_todos",
+    description: "list-todos 별칭",
+    execute: () => JSON.stringify(listTodos("AGENT"))
+  });
+  document.modelContext.registerTool({
+    name: "toggle_todo",
+    description: "toggle-todo 별칭",
+    execute: ({ id }) => toggleTodo(id, "AGENT")
+  });
+  document.modelContext.registerTool({
+    name: "delete_todo",
+    description: "delete-todo 별칭",
+    execute: ({ id }) => deleteTodo(id, "AGENT")
+  });
+
+  // Update Status Banner
+  const statusMode = isNativeWorking ? "Native API 감지" : "Simulation Mode";
+  statusBanner.className = isNativeWorking ? "on status-active" : "status-shim";
+  document.getElementById("status-text").textContent = `WebMCP Active (${statusMode}) — 4 Tools Registered`;
+  document.getElementById("tool-count-badge").textContent = `${registeredToolNames.length} Tools`;
+
+  appendLog("SYSTEM", "WebMCP Ready", null, `도구 4개 등록 완료 (${statusMode}): ${registeredToolNames.join(", ")}`, 0.2);
+}
+
+initWebMCP().catch(err => {
+  statusBanner.className = "off status-disabled";
+  document.getElementById("status-text").textContent = `WebMCP 초기화 실패: ${err.message}`;
+});
+
+// ==========================================
+// 4. Quick Action Bar & Tutorial Helpers
+// ==========================================
+document.querySelectorAll("[data-payload]").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const payload = btn.getAttribute("data-payload");
+    navigator.clipboard?.writeText(payload);
+    showToast(`프롬프트 복사됨: "${payload}"`);
+  });
+});
+
+document.getElementById("btn-test-tool-add").addEventListener("click", async () => {
+  await document.modelContext.executeTool("add-todo", { text: "WebMCP 실습 촬영" });
+  showToast("add-todo 도구 호출 완료");
+});
+
+document.getElementById("btn-test-tool-toggle").addEventListener("click", async () => {
+  await document.modelContext.executeTool("toggle-todo", { id: 2 });
+  showToast("toggle-todo(2) 도구 호출 완료");
+});
+
+document.getElementById("btn-test-tool-delete").addEventListener("click", async () => {
+  await document.modelContext.executeTool("delete-todo", { id: 1 });
+  showToast("delete-todo(1) 도구 호출 완료");
+});
+
+// Global debug handles
+window._todos = todos;
+window._addTodo = addTodo;
+window._toggleTodo = toggleTodo;
+window._deleteTodo = deleteTodo;
+window._listTodos = listTodos;
+</script>
+</body>
+</html>
