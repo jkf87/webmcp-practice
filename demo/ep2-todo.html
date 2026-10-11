@@ -537,7 +537,7 @@
         Client-side Model Context Protocol in Browser (document.modelContext)
       </div>
     </div>
-    
+
     <!-- Top WebMCP Status Banner -->
     <div id="mcp-status" class="off" aria-label="WebMCP Status">
       <span class="status-dot"></span>
@@ -548,7 +548,7 @@
 
   <!-- 2-Column Grid -->
   <div class="grid-layout">
-    
+
     <!-- LEFT COLUMN: Todo App -->
     <div id="todo-app-col">
       <div class="app-card" id="todo-app-card">
@@ -577,7 +577,7 @@
 
     <!-- RIGHT COLUMN: WebMCP Deck -->
     <div id="webmcp-deck-col">
-      
+
       <!-- Tool Registry Inspect Card -->
       <div id="tool-registry-card">
         <div class="card-header">
@@ -879,10 +879,10 @@ function appendLog(actor, toolName, params, result, latencyMs = 1.0) {
   logCount++;
   document.getElementById("log-count").textContent = `${logCount}건`;
   const timeStr = new Date().toTimeString().split(" ")[0];
-  
+
   const entry = document.createElement("div");
   entry.className = "log-entry";
-  
+
   const line = document.createElement("div");
   line.className = "log-line";
 

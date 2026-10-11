@@ -792,7 +792,7 @@
         Enterprise WebMCP Architecture: Security Hints, Lifecycle, and Declarative Forms
       </div>
     </div>
-    
+
     <div class="header-actions">
       <!-- WebMCP Status Banner -->
       <span id="mcp-status" class="pill off" aria-label="WebMCP Status">
@@ -810,14 +810,14 @@
 
   <!-- 2-Column Grid -->
   <div class="grid-layout">
-    
+
     <!-- LEFT COLUMN: Storefront & Cart & Form -->
     <div id="storefront-col">
-      
+
       <!-- Filters Bar -->
       <div id="filters">
         <input type="text" id="f-search-input" placeholder="상품 검색 (예: 이어폰, 노트북)...">
-        
+
         <label style="color: var(--text-muted); font-size: 12px;">카테고리</label>
         <select id="f-category" aria-label="상품 카테고리 필터">
           <option value="">전체</option>
@@ -894,7 +894,7 @@
 
     <!-- RIGHT COLUMN: WebMCP Deck & Security Deck -->
     <div id="inspector-col">
-      
+
       <!-- Security & Annotations Deck -->
       <div id="tool-hints-card">
         <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -1085,7 +1085,7 @@ class WebMCPShim {
       if (params.firstName && form.elements.firstName) form.elements.firstName.value = params.firstName;
       if (params.topic && form.elements.topic) form.elements.topic.value = params.topic;
       if (params.message && form.elements.message) form.elements.message.value = params.message;
-      
+
       form.classList.add("tool-form-active");
       setTimeout(() => form.classList.remove("tool-form-active"), 1500);
 
@@ -1164,7 +1164,7 @@ if (!isNativeWorking) {
       if (params.firstName && form.elements.firstName) form.elements.firstName.value = params.firstName;
       if (params.topic && form.elements.topic) form.elements.topic.value = params.topic;
       if (params.message && form.elements.message) form.elements.message.value = params.message;
-      
+
       form.classList.add("tool-form-active");
       setTimeout(() => form.classList.remove("tool-form-active"), 1500);
 
@@ -1274,7 +1274,7 @@ const discountBadgeEl = document.getElementById("discount-badge");
 function inFilter(p) {
   const matchCategory = !state.filter.category || p.category === state.filter.category;
   const matchPrice = p.price <= state.filter.maxPrice;
-  const matchSearch = !state.filter.search || 
+  const matchSearch = !state.filter.search ||
     (p.name + p.desc + p.category).toLowerCase().includes(state.filter.search.toLowerCase());
   return matchCategory && matchPrice && matchSearch;
 }
@@ -1415,7 +1415,7 @@ function applyFilter(category, maxPrice, searchQuery = "", actor = "USER") {
 
 function searchProducts(query, actor = "USER") {
   const startTime = performance.now();
-  const results = PRODUCTS.filter((p) => 
+  const results = PRODUCTS.filter((p) =>
     (p.name + p.desc + p.category).toLowerCase().includes(query.toLowerCase())
   );
   appendLog(actor, "search-products", { query }, `${results.length}개 검색됨`, performance.now() - startTime + 0.6);
@@ -1506,7 +1506,7 @@ document.getElementById("btn-cancel-checkout").addEventListener("click", () => {
 function summarizeReview(productId, actor = "USER") {
   const startTime = performance.now();
   const r = REVIEWS[productId];
-  const summary = r 
+  const summary = r
     ? `"${r}" (한 줄 요약: 배터리 만족, 이어팁 아쉬움) [untrustedContentHint 적용]`
     : "등록된 리뷰가 없습니다.";
   appendLog(actor, "summarize-review", { productId }, summary, performance.now() - startTime + 0.8);
@@ -1541,7 +1541,7 @@ document.getElementById("support-form").addEventListener("submit", (e) => {
   const form = e.target;
   const fd = new FormData(form);
   const summary = `고객 문의 접수: ${fd.get("firstName")} / ${fd.get("topic")}`;
-  
+
   if (e.agentInvoked) {
     appendLog("DECLARATIVE", "support-request", { name: fd.get("firstName"), topic: fd.get("topic") }, summary + " (AI 에이전트 자동 호출)");
     if (e.respondWith) {
@@ -1563,7 +1563,7 @@ async function refreshToolList() {
   const explorerList = document.getElementById("tool-list");
   explorerList.innerHTML = "";
   const tools = await document.modelContext.getTools();
-  
+
   for (const t of tools) {
     const row = document.createElement("div");
     row.className = "explorer-row";
